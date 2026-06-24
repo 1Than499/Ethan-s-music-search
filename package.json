@@ -1,0 +1,19 @@
+{
+  "name": "music-search",
+  "version": "1.0.0",
+  "description": "多平台音乐搜索与下载工具 — 聚合网易云音乐、酷我音乐、QQ音乐",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "keywords": ["music", "search", "netease", "kuwo", "qq", "music-download"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.18.1",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "NeteaseCloudMusicApi": "^4.32.0"
+  }
+}

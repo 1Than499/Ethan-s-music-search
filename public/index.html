@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>音乐搜索器（仅用于个人学习和技术研究）</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app">
+  <!-- ─── Title Bar ─── -->
+  <div class="title-bar">
+    <div class="traffic-lights">
+      <span class="tl-red"></span><span class="tl-yellow"></span><span class="tl-green"></span>
+    </div>
+    <span class="title">音乐搜索器（仅用于个人学习和技术研究）</span>
+    <div class="title-actions">
+      <button class="title-btn" id="btnTheme" onclick="toggleTheme()" title="切换明暗主题">🌓</button>
+    </div>
+  </div>
+
+  <!-- ─── Main ─── -->
+  <div class="main">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="brand">
+        <div class="icon">🎵</div>
+        <div>
+          <div class="name">Music Search</div>
+          <div class="ver" id="brandVer">多平台音乐搜索</div>
+        </div>
+      </div>
+
+      <!-- Platform Selector (multi-select) -->
+      <div class="sidebar-section">音乐平台（多选）</div>
+      <div class="source-selector" id="sourceSelector">
+        <button class="source-btn active" data-source="netease" onclick="toggleSource('netease')">🔴 网易云</button>
+        <button class="source-btn active" data-source="kuwo" onclick="toggleSource('kuwo')">🟠 酷我</button>
+        <button class="source-btn active" data-source="qq" onclick="toggleSource('qq')">🟢 QQ</button>
+      </div>
+
+      <div class="search-group">
+        <span class="search-icon">🔍</span>
+        <input id="searchInput" type="text" placeholder="歌曲、歌手、专辑…" autofocus onkeydown="if(event.key==='Enter')doSearch()">
+      </div>
+      <button onclick="doSearch()" id="searchBtn" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--accent);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all var(--ease);">搜索</button>
+      <div class="sidebar-section">信息</div>
+      <div class="stats-card" id="statsCard">选择平台，输入关键词开始搜索</div>
+      <div class="sidebar-section">提示</div>
+      <div class="stats-card">▶ 播放 &nbsp; ⬇ 下载（多音质）<br>🎤 歌词开关 &nbsp; 🌓 主题切换<br>空格键 播放/暂停</div>
+    </div>
+
+    <!-- Content -->
+    <div class="content" id="contentArea">
+      <!-- Mobile Toolbar (visible only on small screens) -->
+      <div class="mobile-toolbar">
+        <div class="mobile-search-row">
+          <div class="search-group" style="flex:1">
+            <span class="search-icon">🔍</span>
+            <input id="searchInputM" type="text" placeholder="歌曲、歌手、专辑…" onkeydown="if(event.key==='Enter')doSearch()">
+          </div>
+          <button class="mobile-search-btn" onclick="doSearch()">搜索</button>
+        </div>
+        <div class="source-selector mobile-sources" id="sourceSelectorM">
+          <button class="source-btn active" data-source="netease" onclick="toggleSource('netease')">网易云</button>
+          <button class="source-btn active" data-source="kuwo" onclick="toggleSource('kuwo')">酷我</button>
+          <button class="source-btn active" data-source="qq" onclick="toggleSource('qq')">QQ</button>
+        </div>
+      </div>
+      <div class="content-status">
+        <span id="resultLabel">等待搜索</span><span id="resultCount"></span>
+      </div>
+      <div class="song-list-wrap" id="songListWrap">
+        <div class="empty-state" id="emptyState">
+          <div class="icon">🎧</div>
+          <div class="msg">选择平台，搜索你喜欢的音乐</div>
+        </div>
+        <div id="songList"></div>
+        <div class="spinner" id="spinner" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Resizable Divider -->
+    <div class="divider-handle" id="dividerHandle" title="拖动调整歌词面板宽度"></div>
+
+    <!-- Lyrics Panel -->
+    <div class="lyrics-panel" id="lyricsPanel" style="width:300px">
+      <div class="lyrics-header">
+        <span class="label">歌词</span>
+        <button class="btn-close" onclick="toggleLyrics()" title="收起">✕</button>
+      </div>
+      <div class="lyrics-body" id="lyricsBody">
+        <div class="no-lyrics" id="noLyrics">
+          <span style="font-size:28px">🎤</span><span>播放歌曲以显示歌词</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Player Bar (macOS style) ─── -->
+  <div class="player-bar" id="playerBar">
+    <!-- Album Art -->
+    <div class="player-art-wrap" id="pArtWrap">
+      <img class="player-art" id="pArt" src="" style="display:none" onload="this.style.display='';$('pArtPH').style.display='none'" onerror="this.style.display='none';$('pArtPH').style.display=''">
+      <div class="player-art-placeholder" id="pArtPH">🎵</div>
+    </div>
+
+    <!-- Track Info -->
+    <div class="player-info">
+      <div class="p-name" id="pName">未在播放</div>
+      <div class="p-artist" id="pArtist">选择歌曲开始播放</div>
+    </div>
+
+    <!-- Controls + Progress -->
+    <div class="player-main">
+      <div class="player-controls">
+        <button class="pctrl-btn" onclick="seekRelative(-5)" title="后退 5 秒">⏪</button>
+        <button class="pctrl-btn play-btn" id="btnPlay" onclick="togglePlay()" title="播放 / 暂停">▶</button>
+        <button class="pctrl-btn" onclick="seekRelative(5)" title="快进 5 秒">⏩</button>
+      </div>
+      <div class="progress-row">
+        <span class="time" id="timeCur">0:00</span>
+        <div class="progress-track" id="progressTrack" onclick="seekByClick(event)">
+          <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+        <span class="time" id="timeDur">0:00</span>
+      </div>
+    </div>
+
+    <!-- Right: fav · download · lyric · volume -->
+    <div class="player-extra">
+      <button class="pctrl-btn fav-btn" id="btnFav" onclick="toggleFavorite()" title="收藏">♡</button>
+      <button class="pctrl-btn" onclick="downloadCurrent()" title="下载">⬇</button>
+      <button class="pctrl-btn lyric-btn" id="btnLyric" onclick="toggleLyrics()" title="歌词">🎤</button>
+      <div class="vol-group">
+        <span class="vol-icon" onclick="toggleMute()" id="volIcon">🔊</span>
+        <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="80" oninput="setVolume(this.value)">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Quality Picker Modal ─── -->
+<div class="modal-overlay" id="qualityModal">
+  <div class="modal">
+    <h3 id="qModalTitle">选择下载音质</h3>
+    <div class="sub" id="qModalSub"></div>
+    <div class="quality-list" id="qualityList">
+      <div class="loading-row"><div class="spinner"></div>加载音质列表…</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeQualityModal()">取消</button>
+      <button class="btn-download" id="btnDownloadConfirm" onclick="confirmDownload()" disabled>下载</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Toast ─── -->
+<div class="toast" id="toast"></div>
+
+<audio id="audio" ontimeupdate="onTimeUpdate()" onloadedmetadata="onMetaLoaded()" onended="onSongEnd()"></audio>
+
+<!-- ─── JavaScript (loaded in dependency order) ─── -->
+<script src="js/app.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/search.js"></script>
+<script src="js/player.js"></script>
+<script src="js/lyrics.js"></script>
+<script src="js/modal.js"></script>
+</body>
+</html>
