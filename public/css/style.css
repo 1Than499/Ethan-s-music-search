@@ -454,21 +454,62 @@ html, body { height:100%; overflow:hidden; font-family:var(--font); background:#
 .player-extra { display:flex; align-items:center; gap:2px; flex-shrink:0; }
 .player-extra .pctrl-btn { width:28px; height:28px; font-size:12px; color:var(--text2); }
 .player-extra .pctrl-btn:hover { color:var(--text); background:var(--glass2); }
-.vol-group { display:flex; align-items:center; gap:4px; }
-.vol-icon { font-size:12px; color:var(--text2); cursor:pointer; transition:color 0.15s;
-  width:18px; text-align:center; line-height:1; user-select:none; }
-.vol-icon:hover { color:var(--text); }
-.vol-slider {
-  -webkit-appearance:none; appearance:none; width:60px; height:4px;
-  background:var(--glass2); border-radius:3px; outline:none; cursor:pointer; margin:0;
+
+/* Volume — Liquid Glass Control */
+.vol-group {
+  display:flex; align-items:center; gap:3px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: 18px; padding: 4px 8px;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  transition: all 0.25s var(--ease);
 }
-.vol-slider::-webkit-slider-thumb { -webkit-appearance:none; width:12px; height:12px; border-radius:50%;
-  background:var(--accent); cursor:pointer; box-shadow:0 0 8px var(--accent-glow); transition:all 0.15s; }
-.vol-slider::-webkit-slider-thumb:hover { transform:scale(1.2); }
-.vol-slider::-webkit-slider-runnable-track { height:4px; border-radius:3px; background:transparent; }
-.vol-slider::-moz-range-thumb { width:12px; height:12px; border-radius:50%; background:var(--accent);
-  border:none; cursor:pointer; }
-.vol-slider::-moz-range-track { height:4px; border-radius:3px; background:var(--glass2); }
+.vol-group:hover {
+  background: var(--glass2);
+  border-color: var(--glass-border-accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+.vol-icon {
+  font-size: 11px; color: var(--text2); cursor: pointer;
+  transition: all 0.15s; width: 16px; text-align: center;
+  line-height: 1; user-select: none; flex-shrink: 0;
+}
+.vol-icon:hover { color: var(--accent); text-shadow: 0 0 8px var(--accent-glow); }
+
+/* Slider track — glass with accent fill */
+.vol-slider {
+  -webkit-appearance: none; appearance: none;
+  width: 58px; height: 4px;
+  border-radius: 3px; outline: none; cursor: pointer; margin: 0;
+  background: var(--glass2);
+  background-image: linear-gradient(to right, var(--accent) var(--vol-pct, 80%), transparent var(--vol-pct, 80%));
+  transition: background 0.15s;
+}
+.vol-group:hover .vol-slider {
+  background-image: linear-gradient(to right, var(--accent) var(--vol-pct, 80%), var(--glass-border) var(--vol-pct, 80%));
+}
+.vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow), 0 2px 4px rgba(0,0,0,0.15);
+  cursor: pointer; transition: all 0.2s var(--ease);
+}
+.vol-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 20px var(--accent-glow), 0 4px 8px rgba(0,0,0,0.2);
+}
+.vol-slider::-webkit-slider-thumb:active { transform: scale(1.05); }
+.vol-slider::-webkit-slider-runnable-track { height: 4px; border-radius: 3px; background: transparent; }
+
+/* Firefox */
+.vol-slider::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #fff; border: 2px solid var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow), 0 2px 4px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+.vol-slider::-moz-range-track { height: 4px; border-radius: 3px; background: var(--glass2); }
 
 /* ═══════════════════════════════════════════════════════════════════
    Modal — Glass

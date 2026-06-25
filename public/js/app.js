@@ -68,6 +68,7 @@ function init() {
   initAccent();
   initDivider();
   updateBrandLabel();
+  updateVolFill();
 
   // Restore lyrics width
   const savedW = localStorage.getItem('music-lyrics-width');

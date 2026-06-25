@@ -106,6 +106,7 @@ function setVolume(v) {
   S.volume = parseInt(v);
   audio.volume = S.volume / 100;
   updateVolIcon();
+  updateVolFill();
 }
 
 function toggleMute() {
@@ -118,6 +119,10 @@ function updateVolIcon() {
   if (S.muted || S.volume === 0) $('volIcon').textContent = '🔇';
   else if (S.volume < 50) $('volIcon').textContent = '🔉';
   else $('volIcon').textContent = '🔊';
+}
+
+function updateVolFill() {
+  $('volSlider').style.setProperty('--vol-pct', S.volume + '%');
 }
 
 // ── Quick Download Current Song ─────────────────────────────────────
