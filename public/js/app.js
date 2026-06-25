@@ -46,9 +46,26 @@ function toggleTheme() {
   applyTheme(cur === 'dark' ? 'light' : 'dark');
 }
 
+// ── Accent Color ─────────────────────────────────────────────────────
+function initAccent() {
+  const saved = localStorage.getItem('music-accent') || 'blue';
+  setAccent(saved);
+}
+
+function setAccent(color) {
+  document.documentElement.setAttribute('data-accent', color);
+  S.accent = color;
+  // Update active dot
+  document.querySelectorAll('.accent-dot').forEach(d => {
+    d.classList.toggle('active', d.dataset.accent === color);
+  });
+  localStorage.setItem('music-accent', color);
+}
+
 // ── Init ────────────────────────────────────────────────────────────
 function init() {
   initTheme();
+  initAccent();
   initDivider();
   updateBrandLabel();
 

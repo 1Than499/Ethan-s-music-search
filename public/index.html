@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN" data-theme="dark" data-accent="blue">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,6 +16,14 @@
     </div>
     <span class="title">音乐搜索器（仅用于个人学习和技术研究）</span>
     <div class="title-actions">
+      <div class="accent-dots" id="accentDots">
+        <span class="accent-dot red"    data-accent="red"    onclick="setAccent('red')"    title="红色"></span>
+        <span class="accent-dot orange" data-accent="orange" onclick="setAccent('orange')" title="橙色"></span>
+        <span class="accent-dot yellow" data-accent="yellow" onclick="setAccent('yellow')" title="黄色"></span>
+        <span class="accent-dot green"  data-accent="green"  onclick="setAccent('green')"  title="绿色"></span>
+        <span class="accent-dot blue active"   data-accent="blue"   onclick="setAccent('blue')"   title="蓝色"></span>
+        <span class="accent-dot purple" data-accent="purple" onclick="setAccent('purple')" title="紫色"></span>
+      </div>
       <button class="title-btn" id="btnTheme" onclick="toggleTheme()" title="切换明暗主题">🌓</button>
     </div>
   </div>
