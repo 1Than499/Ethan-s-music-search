@@ -494,6 +494,7 @@ html, body { height:100%; overflow:hidden; font-family:var(--font); background:#
   border: 2px solid var(--accent);
   box-shadow: 0 0 12px var(--accent-glow), 0 2px 4px rgba(0,0,0,0.15);
   cursor: pointer; transition: all 0.2s var(--ease);
+  margin-top: -5px;
 }
 .vol-slider::-webkit-slider-thumb:hover {
   transform: scale(1.15);
