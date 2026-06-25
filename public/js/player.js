@@ -3,45 +3,42 @@
    ═══════════════════════════════════════════════════════════════════ */
 
 // ── Play Song ───────────────────────────────────────────────────────
-let playAbortController = null;
+let playRequestId = 0;
 
 async function playSong(source, id, name, artists, keyword) {
-  // 取消上一次未完成的播放请求（防止竞态条件）
-  if (playAbortController) playAbortController.abort();
-  playAbortController = new AbortController();
-  const { signal } = playAbortController;
+  // 递增请求 ID，用于忽略过期响应
+  const thisRequest = ++playRequestId;
 
-  // 立即停止当前音频
+  // 暂停当前播放
   audio.pause();
-  audio.src = '';
   S.isPlaying = false;
   updatePlayState();
 
-  // 移除所有 playing 状态
+  // 移除所有 playing 状态，高亮当前行
   document.querySelectorAll('.song-row').forEach(r => r.classList.remove('playing'));
-  const row = document.getElementById(`song-${source}-${id}`);
+  const row = document.getElementById('song-' + source + '-' + id);
   if (row) row.classList.add('playing');
 
   // 显示加载状态
   $('pName').innerHTML = '<span style="color:var(--text3)">加载中…</span>';
   $('pArtist').textContent = '';
-  S.currentSongId = null;
-  S.meta = null;
 
   try {
-    const params = new URLSearchParams({ name, keyword: keyword || name });
-    const r = await fetch(`/api/song/url/${source}/${id}?${params}`, { signal });
+    const kw = keyword || name || '';
+    const r = await fetch('/api/song/url/' + source + '/' + id + '?name=' + encodeURIComponent(name || '') + '&keyword=' + encodeURIComponent(kw));
     const d = await r.json();
+
+    // 如果已有更新的请求，忽略此响应
+    if (thisRequest !== playRequestId) return;
 
     if (!d.url) { showToast('😞 暂无可用播放源'); return; }
 
-    S.currentSongId = { source, id, keyword: keyword || name };
-    S.meta = { name: d.name || name, artist: d.artist || artists, cover: d.cover || '', source };
+    S.currentSongId = { source: source, id: id, keyword: kw };
+    S.meta = { name: d.name || name, artist: d.artist || artists, cover: d.cover || '', source: source };
 
     // 更新播放栏信息
-    const sourceLabel = SOURCE_NAMES[source] || '';
-    $('pName').innerHTML = `${esc(d.name || name)} <span class="p-source ${source}">${SOURCE_ICONS[source]}</span>`;
-    $('pArtist').textContent = (d.artist || artists || '—') + (sourceLabel ? ` · ${sourceLabel}` : '');
+    $('pName').innerHTML = esc(d.name || name) + ' <span class="p-source ' + source + '">' + (SOURCE_ICONS[source] || '') + '</span>';
+    $('pArtist').textContent = (d.artist || artists || '—');
 
     // 封面
     if (d.cover) {
@@ -60,12 +57,13 @@ async function playSong(source, id, name, artists, keyword) {
     audio.src = d.url;
     audio.load();
     audio.volume = S.volume / 100;
-    audio.play().then(() => {
+    audio.play().then(function() {
       S.isPlaying = true;
       updatePlayState();
-    }).catch(() => {});
+    }).catch(function() {});
   } catch (e) {
-    if (e.name === 'AbortError') return; // 被取消，忽略
+    // 忽略过期请求的错误
+    if (thisRequest !== playRequestId) return;
     showToast('获取播放链接失败');
     console.error(e);
   }
