@@ -17,50 +17,34 @@ router.get('/url/:source/:id', async (req, res) => {
   try {
     const { source, id } = req.params;
     const { name, keyword } = req.query;
-    console.log(`🔗 获取播放链接 [${source}]: ${id} "${name || ''}"`);
+    console.log(`🔗 播放链接 [${source}]: ${id} "${(name || '').slice(0, 20)}"`);
 
-    let detail;
-    switch (source) {
-      case 'kuwo':
-        detail = await getKuwoUrl(id, 'zp');
-        // Kuwo 失败时尝试不同音质
-        if (!detail || !detail.audioUrl) {
-          detail = await getKuwoUrl(id, 'hq');
-        }
-        break;
-      case 'qq': {
-        detail = await getQQUrl(id, keyword || name || '');
-        if (!detail || !detail.audioUrl) {
-          console.log(`  🔄 QQ 重试: ${id}`);
-          detail = await getQQUrl(id, (name || '').split(' ')[0]);
-        }
-        break;
-      }
-      case 'netease':
-      default: {
-        detail = await getNeteaseUrl(id);
-        if (detail && detail.audioUrl) {
-          const lrc = await getNeteaseLyric(id);
-          if (lrc) detail.lrc = lrc;
-        }
-        break;
-      }
+    let detail = null;
+    if (source === 'kuwo') {
+      detail = await getKuwoUrl(id, 'zp');
+      if (!detail || !detail.audioUrl) detail = await getKuwoUrl(id, 'hq');
+    } else if (source === 'qq') {
+      detail = await getQQUrl(id, keyword || name || '');
+    } else {
+      // netease (default)
+      detail = await getNeteaseUrl(id);
     }
 
     if (detail && detail.audioUrl) {
       return res.json({
         url: detail.audioUrl,
-        name: detail.name,
-        artist: detail.artist,
-        cover: detail.cover,
+        name: detail.name || name || '',
+        artist: detail.artist || '',
+        cover: detail.cover || null,
         lrc: detail.lrc || null,
       });
     }
 
+    console.log(`  ⚠ 无播放链接 [${source}]: ${id}`);
     res.json({ url: null, error: '无法获取播放链接' });
   } catch (e) {
     console.error('[Song URL Error]', e.message);
-    res.json({ url: null, error: '服务异常: ' + e.message });
+    res.json({ url: null, error: '服务异常' });
   }
 });
 
