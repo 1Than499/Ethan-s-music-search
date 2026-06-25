@@ -408,23 +408,45 @@ html, body { height:100%; overflow:hidden; font-family:var(--font); background:#
 
 /* ── Controls ──────────────────────────────────────────────── */
 .player-main { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0; }
-.player-controls { display:flex; align-items:center; gap:8px; }
-.pctrl-btn {
-  width:30px; height:30px; border-radius:50%; border:1px solid var(--glass-border);
-  background:var(--glass); color:var(--text); cursor:pointer; font-size:13px;
-  display:flex; align-items:center; justify-content:center;
-  transition:all 0.2s var(--ease); position:relative;
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+.player-controls { display:flex; align-items:center; }
+
+/* Playback capsule — glass container for ⏪ ▶ ⏩ */
+.player-controls-capsule {
+  display:flex; align-items:center; gap:2px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: 22px; padding: 3px;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  transition: all 0.25s var(--ease);
 }
-.pctrl-btn:hover { background:var(--glass2); border-color:var(--glass-border-accent); transform:scale(1.05); }
-.pctrl-btn:active { transform:scale(0.94); }
+.player-controls-capsule:hover {
+  background: var(--glass2);
+  border-color: var(--glass-border-accent);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.pctrl-btn {
+  width:30px; height:30px; border-radius:50%; border:none;
+  background:transparent; color:var(--text2); cursor:pointer; font-size:13px;
+  display:flex; align-items:center; justify-content:center;
+  transition: all 0.2s var(--ease);
+}
+.pctrl-btn:hover { color:var(--text); background:var(--glass); }
+.pctrl-btn:active { transform:scale(0.92); }
+
+/* Skip buttons — subtle */
+.skip-btn { font-size:11px; color:var(--text3); }
+.skip-btn:hover { color:var(--accent); }
+
+/* Play button — prominent accent */
 .pctrl-btn.play-btn {
   width:34px; height:34px; background:var(--accent); color:#fff;
-  border:none; font-size:14px; border-radius:50%;
-  box-shadow: 0 4px 20px var(--accent-glow);
+  font-size:13px; border-radius:50%;
+  box-shadow: 0 2px 14px var(--accent-glow);
+  margin: 0 2px;
 }
-.pctrl-btn.play-btn:hover { background:var(--accent-hover); transform:scale(1.06); box-shadow:0 6px 28px var(--accent-glow); }
+.pctrl-btn.play-btn:hover { background:var(--accent-hover); transform:scale(1.06); box-shadow:0 4px 22px var(--accent-glow); }
 .pctrl-btn.play-btn:active { transform:scale(0.94); }
+
 .pctrl-btn.lyric-btn.active { color:var(--accent); border-color:var(--accent); box-shadow:0 0 12px var(--accent-glow); }
 .pctrl-btn.fav-btn { font-size:13px; }
 .pctrl-btn.fav-btn.liked { color:var(--red); border-color:var(--red); }
@@ -675,9 +697,9 @@ html, body { height:100%; overflow:hidden; font-family:var(--font); background:#
   .player-info .p-name .p-source { font-size:7px; padding:0 3px; }
   .player-info .p-artist { font-size:9px; }
   .player-main { gap:2px; }
-  .player-controls { gap:4px; }
-  .pctrl-btn { width:34px; height:34px; font-size:15px; }
-  .pctrl-btn.play-btn { width:38px; height:38px; font-size:15px; }
+  .player-controls-capsule { padding:4px; }
+  .player-controls-capsule .pctrl-btn { width:34px; height:34px; font-size:14px; }
+  .player-controls-capsule .play-btn { width:38px; height:38px; font-size:15px; }
   .progress-row { gap:6px; max-width:100%; }
   .progress-row .time { min-width:28px; font-size:8px; }
   .vol-slider { display:none; }
@@ -708,8 +730,7 @@ html, body { height:100%; overflow:hidden; font-family:var(--font); background:#
   .empty-state .icon { font-size:40px; }
   .empty-state .msg { font-size:14px; }
   .song-row .actions { opacity:1; }
-  .pctrl-btn:hover { transform:none; }
-  .pctrl-btn.play-btn:hover { transform:none; }
+  .player-controls-capsule .pctrl-btn:hover { transform:none; }
   .progress-track:hover { height:4px; }
   .progress-fill::after { display:none; }
 }
@@ -725,8 +746,8 @@ html, body { height:100%; overflow:hidden; font-family:var(--font); background:#
   .player-info { max-width:100px; }
   .player-info .p-name { font-size:10px; }
   .player-info .p-artist { font-size:8px; }
-  .pctrl-btn { width:30px; height:30px; font-size:13px; }
-  .pctrl-btn.play-btn { width:34px; height:34px; font-size:14px; }
+  .player-controls-capsule .pctrl-btn { width:30px; height:30px; font-size:13px; }
+  .player-controls-capsule .play-btn { width:34px; height:34px; font-size:14px; }
   .song-row { padding:6px 8px; gap:8px; }
   .song-row .art { width:36px; height:36px; }
   .song-row .btn { width:28px; height:28px; font-size:12px; }

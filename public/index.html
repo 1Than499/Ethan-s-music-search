@@ -123,9 +123,11 @@
     <!-- Controls + Progress -->
     <div class="player-main">
       <div class="player-controls">
-        <button class="pctrl-btn" onclick="seekRelative(-5)" title="后退 5 秒">⏪</button>
-        <button class="pctrl-btn play-btn" id="btnPlay" onclick="togglePlay()" title="播放 / 暂停">▶</button>
-        <button class="pctrl-btn" onclick="seekRelative(5)" title="快进 5 秒">⏩</button>
+        <div class="player-controls-capsule">
+          <button class="pctrl-btn skip-btn" onclick="seekRelative(-5)" title="后退 5 秒">⏪</button>
+          <button class="pctrl-btn play-btn" id="btnPlay" onclick="togglePlay()" title="播放 / 暂停">▶</button>
+          <button class="pctrl-btn skip-btn" onclick="seekRelative(5)" title="快进 5 秒">⏩</button>
+        </div>
       </div>
       <div class="progress-row">
         <span class="time" id="timeCur">0:00</span>
