@@ -35,23 +35,32 @@ async function searchQQ(keyword, page = 1, limit = 30) {
       _keyword: keyword,
     }));
 
-    // 并行拉取封面（搜索接口不返回封面，需逐个查详情）
-    const coverResults = await Promise.allSettled(
-      songs.filter(s => !s.albumCover && s._mid).map(async (s) => {
-        try {
-          const dr = await axios.get(QQ_API, {
-            params: { msg: keyword, type: 'json', mid: s._mid },
-            headers: HEADERS, timeout: 5000,
-          });
-          const d = dr.data;
-          if (d && d.album_pic) s.albumCover = d.album_pic;
-          else if (d && d.singer_pic) s.albumCover = d.singer_pic;
-          if (d && d.album_name) s.album = d.album_name;
-        } catch (_) { /* ignore */ }
-      })
-    );
-    const ok = coverResults.filter(r => r.status === 'fulfilled').length;
-    if (ok > 0) console.log(`  📸 QQ 封面获取: ${ok}/${coverResults.length}`);
+    // 批量获取封面（避免并发过多被限流，每批 3 个）
+    const songsNeedingCovers = songs.filter(s => !s.albumCover && s._mid);
+    if (songsNeedingCovers.length > 0) {
+      const BATCH = 3;
+      let fetched = 0;
+      for (let i = 0; i < songsNeedingCovers.length; i += BATCH) {
+        const batch = songsNeedingCovers.slice(i, i + BATCH);
+        const results = await Promise.allSettled(
+          batch.map(async (s) => {
+            try {
+              const dr = await axios.get(QQ_API, {
+                params: { msg: s._keyword || keyword, type: 'json', mid: s._mid },
+                headers: HEADERS, timeout: 8000,
+              });
+              const d = dr.data;
+              if (d && d.album_pic) s.albumCover = d.album_pic;
+              else if (d && d.singer_pic) s.albumCover = d.singer_pic;
+              if (d && d.album_name) s.album = d.album_name;
+              if (d && d.album_title && !s.album) s.album = d.album_title;
+              fetched++;
+            } catch (_) { /* ignore */ }
+          })
+        );
+      }
+      console.log(`  📸 QQ 封面获取: ${fetched}/${songsNeedingCovers.length}`);
+    }
 
     return { songs, total: data.length };
   } catch (e) {
