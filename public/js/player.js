@@ -8,6 +8,14 @@ let playRequestId = 0;
 async function playSong(source, id, name, artists, keyword) {
   var thisRequest = ++playRequestId;
 
+  // ⚠️ 关键：在 await 之前激活 audio 元素，保留用户手势上下文
+  // 浏览器 autoplay 策略要求 play() 在用户交互的同步调用链中
+  audio.muted = true;
+  var unlock = audio.play();
+  if (unlock) unlock.catch(function() {});
+  audio.pause();
+  audio.muted = S.muted;
+
   // 高亮
   document.querySelectorAll('.song-row').forEach(function(r) { r.classList.remove('playing'); });
   var row = document.getElementById('song-' + source + '-' + id);
@@ -18,10 +26,9 @@ async function playSong(source, id, name, artists, keyword) {
 
   try {
     var kw = keyword || name || '';
-    var url = '/api/song/url/' + source + '/' + id +
+    var r = await fetch('/api/song/url/' + source + '/' + id +
       '?name=' + encodeURIComponent(name || '') +
-      '&keyword=' + encodeURIComponent(kw);
-    var r = await fetch(url);
+      '&keyword=' + encodeURIComponent(kw));
     var d = await r.json();
 
     if (thisRequest !== playRequestId) return;
@@ -50,8 +57,9 @@ async function playSong(source, id, name, artists, keyword) {
     S.lyrics = d.lrc ? parseLRC(d.lrc) : [];
     renderLyrics();
 
+    // 恢复静音状态并播放
+    audio.muted = S.muted;
     audio.src = d.url;
-    audio.load();
     audio.volume = S.volume / 100;
     audio.play().then(function() {
       S.isPlaying = true;
