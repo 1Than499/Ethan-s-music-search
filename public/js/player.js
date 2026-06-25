@@ -3,15 +3,34 @@
    ═══════════════════════════════════════════════════════════════════ */
 
 // ── Play Song ───────────────────────────────────────────────────────
+let playAbortController = null;
+
 async function playSong(source, id, name, artists, keyword) {
+  // 取消上一次未完成的播放请求（防止竞态条件）
+  if (playAbortController) playAbortController.abort();
+  playAbortController = new AbortController();
+  const { signal } = playAbortController;
+
+  // 立即停止当前音频
+  audio.pause();
+  audio.src = '';
+  S.isPlaying = false;
+  updatePlayState();
+
   // 移除所有 playing 状态
   document.querySelectorAll('.song-row').forEach(r => r.classList.remove('playing'));
   const row = document.getElementById(`song-${source}-${id}`);
   if (row) row.classList.add('playing');
 
+  // 显示加载状态
+  $('pName').innerHTML = '<span style="color:var(--text3)">加载中…</span>';
+  $('pArtist').textContent = '';
+  S.currentSongId = null;
+  S.meta = null;
+
   try {
     const params = new URLSearchParams({ name, keyword: keyword || name });
-    const r = await fetch(`/api/song/url/${source}/${id}?${params}`);
+    const r = await fetch(`/api/song/url/${source}/${id}?${params}`, { signal });
     const d = await r.json();
 
     if (!d.url) { showToast('😞 暂无可用播放源'); return; }
@@ -46,6 +65,7 @@ async function playSong(source, id, name, artists, keyword) {
       updatePlayState();
     }).catch(() => {});
   } catch (e) {
+    if (e.name === 'AbortError') return; // 被取消，忽略
     showToast('获取播放链接失败');
     console.error(e);
   }
