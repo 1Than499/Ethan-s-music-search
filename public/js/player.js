@@ -1,20 +1,12 @@
 /* ═══════════════════════════════════════════════════════════════════
-   player.js — Audio Playback
+   player.js — Audio Playback (XHR + simple approach)
    ═══════════════════════════════════════════════════════════════════ */
 
 // ── Play Song ───────────────────────────────────────────────────────
-let playRequestId = 0;
+var playRequestId = 0;
 
-async function playSong(source, id, name, artists, keyword) {
+function playSong(source, id, name, artists, keyword) {
   var thisRequest = ++playRequestId;
-
-  // ⚠️ 关键：在 await 之前激活 audio 元素，保留用户手势上下文
-  // 浏览器 autoplay 策略要求 play() 在用户交互的同步调用链中
-  audio.muted = true;
-  var unlock = audio.play();
-  if (unlock) unlock.catch(function() {});
-  audio.pause();
-  audio.muted = S.muted;
 
   // 高亮
   document.querySelectorAll('.song-row').forEach(function(r) { r.classList.remove('playing'); });
@@ -24,52 +16,71 @@ async function playSong(source, id, name, artists, keyword) {
   $('pName').innerHTML = '<span style="color:var(--text3)">加载中…</span>';
   $('pArtist').textContent = '';
 
-  try {
-    var kw = keyword || name || '';
-    var r = await fetch('/api/song/url/' + source + '/' + id +
-      '?name=' + encodeURIComponent(name || '') +
-      '&keyword=' + encodeURIComponent(kw));
-    var d = await r.json();
+  // 使用 XHR 代替 fetch（更稳定的跨域行为）
+  var kw = keyword || name || '';
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/api/song/url/' + source + '/' + id +
+    '?name=' + encodeURIComponent(name || '') +
+    '&keyword=' + encodeURIComponent(kw));
+  xhr.timeout = 10000;
 
+  xhr.onload = function() {
     if (thisRequest !== playRequestId) return;
-
-    if (!d || !d.url) {
-      showToast('😞 暂无可用播放源');
-      return;
+    try {
+      var d = JSON.parse(xhr.responseText);
+      if (!d || !d.url) {
+        showToast('😞 暂无可用播放源 [' + source + ']');
+        return;
+      }
+      applyAndPlay(d, source, id, name, artists, kw);
+    } catch (e) {
+      showToast('解析失败: ' + e.message);
     }
+  };
 
-    S.currentSongId = { source: source, id: id, keyword: kw };
-    S.meta = { name: d.name || name, artist: d.artist || artists, cover: d.cover || '', source: source };
-
-    $('pName').innerHTML = esc(d.name || name) + ' <span class="p-source ' + source + '">' + (SOURCE_ICONS[source] || '') + '</span>';
-    $('pArtist').textContent = (d.artist || artists || '—');
-
-    if (d.cover) {
-      $('pArt').src = d.cover;
-      $('pArt').style.display = '';
-      $('pArtPH').style.display = 'none';
-    } else {
-      $('pArt').style.display = 'none';
-      $('pArtPH').style.display = '';
-    }
-    updateFavButton();
-
-    S.lyrics = d.lrc ? parseLRC(d.lrc) : [];
-    renderLyrics();
-
-    // 恢复静音状态并播放
-    audio.muted = S.muted;
-    audio.src = d.url;
-    audio.volume = S.volume / 100;
-    audio.play().then(function() {
-      S.isPlaying = true;
-      updatePlayState();
-    }).catch(function() {});
-  } catch (e) {
+  xhr.onerror = function() {
     if (thisRequest !== playRequestId) return;
-    showToast('获取播放链接失败');
-    console.error(e);
+    showToast('获取播放链接失败 (网络错误)');
+    console.error('XHR error, status:', xhr.status);
+  };
+
+  xhr.ontimeout = function() {
+    if (thisRequest !== playRequestId) return;
+    showToast('获取播放链接超时');
+  };
+
+  xhr.send();
+}
+
+function applyAndPlay(d, source, id, name, artists, kw) {
+  S.currentSongId = { source: source, id: id, keyword: kw };
+  S.meta = { name: d.name || name, artist: d.artist || artists, cover: d.cover || '', source: source };
+
+  $('pName').innerHTML = esc(d.name || name) + ' <span class="p-source ' + source + '">' + (SOURCE_ICONS[source] || '') + '</span>';
+  $('pArtist').textContent = (d.artist || artists || '—');
+
+  if (d.cover) {
+    $('pArt').src = d.cover;
+    $('pArt').style.display = '';
+    $('pArtPH').style.display = 'none';
+  } else {
+    $('pArt').style.display = 'none';
+    $('pArtPH').style.display = '';
   }
+  updateFavButton();
+
+  S.lyrics = d.lrc ? parseLRC(d.lrc) : [];
+  renderLyrics();
+
+  audio.src = d.url;
+  audio.volume = S.volume / 100;
+  audio.play().then(function() {
+    S.isPlaying = true;
+    updatePlayState();
+  }).catch(function(e) {
+    console.warn('play rejected:', e.name);
+    // 静默处理 autoplay 拦截
+  });
 }
 
 // ── Playback Controls ───────────────────────────────────────────────
