@@ -138,9 +138,11 @@
 
     <!-- Right: fav · download · lyric · volume -->
     <div class="player-extra">
-      <button class="pctrl-btn fav-btn" id="btnFav" onclick="toggleFavorite()" title="收藏">♡</button>
-      <button class="pctrl-btn" onclick="downloadCurrent()" title="下载">⬇</button>
-      <button class="pctrl-btn lyric-btn" id="btnLyric" onclick="toggleLyrics()" title="歌词">🎤</button>
+      <div class="player-actions">
+        <button class="pctrl-btn fav-btn" id="btnFav" onclick="toggleFavorite()" title="收藏">♡</button>
+        <button class="pctrl-btn" onclick="downloadCurrent()" title="下载">⬇</button>
+        <button class="pctrl-btn lyric-btn" id="btnLyric" onclick="toggleLyrics()" title="歌词">🎤</button>
+      </div>
       <div class="vol-group">
         <span class="vol-icon" onclick="toggleMute()" id="volIcon">🔊</span>
         <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="80" oninput="setVolume(this.value)">
