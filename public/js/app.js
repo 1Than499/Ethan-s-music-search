@@ -16,6 +16,7 @@ const S = {
   qualities: null, selectedQuality: null,
   pendingDownload: null,       // { source, id, name, artist, keyword }
   favorites: JSON.parse(localStorage.getItem('music-favorites') || '[]'),
+  showingFavorites: false,
 };
 
 // ── Utility Functions ───────────────────────────────────────────────
@@ -69,6 +70,7 @@ function init() {
   initDivider();
   updateBrandLabel();
   updateVolFill();
+  updateFavCount();
 
   // Restore lyrics width
   const savedW = localStorage.getItem('music-lyrics-width');

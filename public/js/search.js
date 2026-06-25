@@ -40,6 +40,9 @@ async function doSearch() {
   searchAbortController = new AbortController();
   const { signal } = searchAbortController;
 
+  // 退出收藏歌单视图
+  S.showingFavorites = false;
+
   // 同时读取桌面端和移动端的输入框
   const kw = ($('searchInput').value || $('searchInputM').value || '').trim();
   if (!kw) return;

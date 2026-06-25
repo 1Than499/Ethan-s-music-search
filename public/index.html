@@ -55,8 +55,11 @@
       <button onclick="doSearch()" id="searchBtn">搜索</button>
       <div class="sidebar-section">信息</div>
       <div class="stats-card" id="statsCard">选择平台，输入关键词开始搜索</div>
-      <div class="sidebar-section">提示</div>
-      <div class="stats-card">▶ 播放 &nbsp; ⬇ 下载（多音质）<br>🎤 歌词开关 &nbsp; 🌓 主题切换<br>空格键 播放/暂停</div>
+      <div class="sidebar-section">❤ 收藏歌单</div>
+      <div class="stats-card fav-card" id="favCard" onclick="showFavorites()" style="cursor:pointer">
+        <span id="favCount">0 首</span> 已收藏<br>
+        <span style="font-size:10px;color:var(--text3)">点击查看全部 ▶</span>
+      </div>
     </div>
 
     <!-- Content -->
