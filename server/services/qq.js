@@ -23,44 +23,21 @@ async function searchQQ(keyword, page = 1, limit = 30) {
     const start = (page - 1) * limit;
     const paged = data.slice(start, start + limit);
 
-    const songs = paged.map((s, i) => ({
-      id: s.song_mid || '',
-      name: s.song_title || s.song_name || '',
-      artists: s.singer_name || '',
-      album: s.album_name || s.album_title || '',
-      albumCover: s.album_pic || s.singer_pic || '',
-      duration: 0,
-      source: 'qq',
-      _mid: s.song_mid || '',
-      _keyword: keyword,
-    }));
-
-    // 批量获取封面（避免并发过多被限流，每批 3 个）
-    const songsNeedingCovers = songs.filter(s => !s.albumCover && s._mid);
-    if (songsNeedingCovers.length > 0) {
-      const BATCH = 3;
-      let fetched = 0;
-      for (let i = 0; i < songsNeedingCovers.length; i += BATCH) {
-        const batch = songsNeedingCovers.slice(i, i + BATCH);
-        const results = await Promise.allSettled(
-          batch.map(async (s) => {
-            try {
-              const dr = await axios.get(QQ_API, {
-                params: { msg: s._keyword || keyword, type: 'json', mid: s._mid },
-                headers: HEADERS, timeout: 8000,
-              });
-              const d = dr.data;
-              if (d && d.album_pic) s.albumCover = d.album_pic;
-              else if (d && d.singer_pic) s.albumCover = d.singer_pic;
-              if (d && d.album_name) s.album = d.album_name;
-              if (d && d.album_title && !s.album) s.album = d.album_title;
-              fetched++;
-            } catch (_) { /* ignore */ }
-          })
-        );
-      }
-      console.log(`  📸 QQ 封面获取: ${fetched}/${songsNeedingCovers.length}`);
-    }
+    const songs = paged.map((s, i) => {
+      const mid = s.song_mid || '';
+      return {
+        id: mid,
+        name: s.song_title || s.song_name || '',
+        artists: s.singer_name || '',
+        album: s.album_name || s.album_title || '',
+        // 直接用 mid 构造封面 URL（秒返，不走额外 API）
+        albumCover: s.album_pic || s.singer_pic || (mid ? 'https://y.gtimg.cn/music/photo_new/T002R300x300M000' + mid + '.jpg' : ''),
+        duration: 0,
+        source: 'qq',
+        _mid: mid,
+        _keyword: keyword,
+      };
+    });
 
     return { songs, total: data.length };
   } catch (e) {
@@ -79,24 +56,33 @@ async function getQQUrl(mid, keyword) {
       headers: HEADERS, timeout: TIMEOUT,
     });
     const d = resp.data;
-    if (!d || typeof d !== 'object' || !d.song_mid) return null;
+    if (!d || typeof d !== 'object') {
+      console.log(`  ⚠ QQ 无数据: mid=${mid}`);
+      return null;
+    }
 
-    // 选择最佳音质 URL
+    // 按优先级选最佳可用 URL（扩展所有已知字段）
     let audioUrl = null;
-    let qualityTag = 'standard';
-    if (d.song_play_url_sq) { audioUrl = d.song_play_url_sq; qualityTag = 'lossless'; }
-    else if (d.song_play_url_pq) { audioUrl = d.song_play_url_pq; qualityTag = 'lossless'; }
-    else if (d.song_play_url_hq) { audioUrl = d.song_play_url_hq; qualityTag = 'hq'; }
-    else if (d.song_play_url_standard) { audioUrl = d.song_play_url_standard; qualityTag = 'standard'; }
-    else { audioUrl = d.song_play_url || null; }
+    if (d.song_play_url_sq) audioUrl = d.song_play_url_sq;
+    else if (d.song_play_url_pq) audioUrl = d.song_play_url_pq;
+    else if (d.song_play_url_hq) audioUrl = d.song_play_url_hq;
+    else if (d.song_play_url_standard) audioUrl = d.song_play_url_standard;
+    else if (d.song_play_url_fq) audioUrl = d.song_play_url_fq;
+    else if (d.song_play_url) audioUrl = d.song_play_url;
+    // 兼容不同字段名
+    else if (d.url) audioUrl = d.url;
+    else if (d.play_url) audioUrl = d.play_url;
+
+    if (!audioUrl) {
+      console.log(`  ⚠ QQ 无播放链接: ${d.song_title || mid} (VIP/下架/地区限制)`);
+    }
 
     return {
-      name: d.song_title || d.song_name || '',
-      artist: d.singer_name || '',
+      name: d.song_title || d.song_name || d.name || '',
+      artist: d.singer_name || d.artist || '',
       audioUrl,
-      cover: d.album_pic || d.singer_pic || null,
-      lrc: d.song_lyric || d.lyric || null,
-      quality: qualityTag,
+      cover: d.album_pic || d.singer_pic || d.pic || (mid ? 'https://y.gtimg.cn/music/photo_new/T002R300x300M000' + mid + '.jpg' : null),
+      lrc: d.song_lyric || d.lyric || d.lrc || null,
     };
   } catch (e) {
     console.error('[QQ URL]', e.message);

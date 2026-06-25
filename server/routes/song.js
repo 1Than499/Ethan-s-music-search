@@ -16,16 +16,23 @@ const { KUWO_API, HEADERS } = require('../config');
 router.get('/url/:source/:id', async (req, res) => {
   const { source, id } = req.params;
   const { name, keyword } = req.query;
-  console.log(`🔗 获取播放链接 [${source}]: ${id}`);
+  console.log(`🔗 获取播放链接 [${source}]: ${id} "${name || ''}"`);
 
   let detail;
   switch (source) {
     case 'kuwo':
       detail = await getKuwoUrl(id, 'zp');
       break;
-    case 'qq':
+    case 'qq': {
+      // 第一次尝试：用完整关键词
       detail = await getQQUrl(id, keyword || name || '');
+      // 失败时用歌名重试一次
+      if (!detail || !detail.audioUrl) {
+        console.log(`  🔄 QQ 重试 [${source}]: ${id} 仅用歌名`);
+        detail = await getQQUrl(id, (name || '').split(' ')[0]);
+      }
       break;
+    }
     case 'netease':
     default: {
       detail = await getNeteaseUrl(id);
