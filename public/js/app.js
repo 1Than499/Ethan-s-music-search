@@ -73,9 +73,10 @@ function init() {
   updateFavCount();
 
   // Restore lyrics width
-  const savedW = localStorage.getItem('music-lyrics-width');
-  if (savedW && $('lyricsPanel').style.display !== 'none') {
-    $('lyricsPanel').style.width = savedW;
+  var lp = $('lyricsPanel');
+  var savedW = localStorage.getItem('music-lyrics-width');
+  if (savedW && lp && lp.style.display !== 'none') {
+    lp.style.width = savedW;
   }
 
   // Keyboard shortcuts

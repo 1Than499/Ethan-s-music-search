@@ -52,9 +52,10 @@ async function doSearch() {
   const sources = getSelectedSources();
   const srcStr = sources.join(',');
 
-  $('emptyState').style.display = 'none';
-  $('songList').innerHTML = '';
-  $('spinner').style.display = 'block';
+  var es = $('emptyState'), sl = $('songList'), sp = $('spinner');
+  if (es) es.style.display = 'none';
+  if (sl) sl.innerHTML = '';
+  if (sp) sp.style.display = 'block';
   $('resultLabel').textContent = `搜索中 [${sources.map(s => SOURCE_NAMES[s]).join('+')}]…`;
   $('resultCount').textContent = '';
   $('statsCard').innerHTML = `平台: <strong>${sources.map(s => SOURCE_NAMES[s]).join(' + ')}</strong><br>搜索中…`;
@@ -71,9 +72,10 @@ async function doSearch() {
     }
 
     if (!d.songs || !d.songs.length) {
-      $('resultLabel').textContent = '无结果';
-      $('emptyState').style.display = 'flex';
-      $('statsCard').innerHTML = `平台: <strong>${sources.map(s => SOURCE_NAMES[s]).join(' + ')}</strong><br>未找到 "<strong>${esc(kw)}</strong>"`;
+      var rl2 = $('resultLabel'), es2 = $('emptyState'), sc2 = $('statsCard');
+      if (rl2) rl2.textContent = '无结果';
+      if (es2) es2.style.display = 'flex';
+      if (sc2) sc2.innerHTML = '平台: <strong>' + sources.map(function(s) { return SOURCE_NAMES[s]; }).join(' + ') + '</strong><br>未找到 "<strong>' + esc(kw) + '</strong>"';
       return;
     }
 

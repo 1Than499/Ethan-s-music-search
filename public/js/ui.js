@@ -87,32 +87,34 @@ function updateFavButton() {
 
 // ── Favorites Playlist ──────────────────────────────────────────────
 function updateFavCount() {
-  const count = S.favorites.length;
-  $('favCount').textContent = count + ' 首';
-  $('favCard').style.display = count > 0 ? '' : 'none';
+  var fc = $('favCount'), fcd = $('favCard');
+  if (fc) fc.textContent = S.favorites.length + ' 首';
+  if (fcd) fcd.style.display = S.favorites.length > 0 ? '' : 'none';
 }
 
 function showFavorites() {
   S.showingFavorites = true;
-  $('spinner').style.display = 'none';
-  $('emptyState').style.display = 'none';
+  var sp2 = $('spinner'), es3 = $('emptyState');
+  if (sp2) sp2.style.display = 'none';
+  if (es3) es3.style.display = 'none';
 
   if (!S.favorites.length) {
-    $('songList').innerHTML = '';
-    $('resultLabel').textContent = '收藏歌单';
-    $('resultCount').textContent = '0 首';
-    $('emptyState').style.display = 'flex';
-    $('emptyState').querySelector('.icon').textContent = '💔';
-    $('emptyState').querySelector('.msg').textContent = '还没有收藏歌曲，播放时点击 ♡ 即可收藏';
-    $('statsCard').innerHTML = '❤ <strong>收藏歌单</strong><br>暂无收藏';
+    var sl2 = $('songList'), rl3 = $('resultLabel'), rc3 = $('resultCount'), sc3 = $('statsCard');
+    if (sl2) sl2.innerHTML = '';
+    if (rl3) rl3.textContent = '收藏歌单';
+    if (rc3) rc3.textContent = '0 首';
+    if (es3) { es3.style.display = 'flex'; var iconEl = es3.querySelector('.icon'); if (iconEl) iconEl.textContent = '💔'; var msgEl = es3.querySelector('.msg'); if (msgEl) msgEl.textContent = '还没有收藏歌曲，播放时点击 ♡ 即可收藏'; }
+    if (sc3) sc3.innerHTML = '❤ <strong>收藏歌单</strong><br>暂无收藏';
     return;
   }
 
-  $('resultLabel').textContent = '收藏歌单';
-  $('resultCount').textContent = S.favorites.length + ' 首';
-  $('statsCard').innerHTML = '❤ <strong>收藏歌单</strong><br>共 <strong>' + S.favorites.length + '</strong> 首';
+  var rl4 = $('resultLabel'), rc4 = $('resultCount'), sc4 = $('statsCard');
+  if (rl4) rl4.textContent = '收藏歌单';
+  if (rc4) rc4.textContent = S.favorites.length + ' 首';
+  if (sc4) sc4.innerHTML = '❤ <strong>收藏歌单</strong><br>共 <strong>' + S.favorites.length + '</strong> 首';
 
-  const list = $('songList');
+  var list = $('songList');
+  if (!list) return;
   list.innerHTML = '';
 
   S.favorites.forEach((s, i) => {
