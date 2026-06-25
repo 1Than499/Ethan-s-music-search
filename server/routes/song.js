@@ -14,48 +14,54 @@ const { KUWO_API, HEADERS } = require('../config');
 // ── Get Song Play URL ─────────────────────────────────────────────
 // GET /api/song/url/:source/:id?name=&artist=&keyword=
 router.get('/url/:source/:id', async (req, res) => {
-  const { source, id } = req.params;
-  const { name, keyword } = req.query;
-  console.log(`🔗 获取播放链接 [${source}]: ${id} "${name || ''}"`);
+  try {
+    const { source, id } = req.params;
+    const { name, keyword } = req.query;
+    console.log(`🔗 获取播放链接 [${source}]: ${id} "${name || ''}"`);
 
-  let detail;
-  switch (source) {
-    case 'kuwo':
-      detail = await getKuwoUrl(id, 'zp');
-      break;
-    case 'qq': {
-      // 第一次尝试：用完整关键词
-      detail = await getQQUrl(id, keyword || name || '');
-      // 失败时用歌名重试一次
-      if (!detail || !detail.audioUrl) {
-        console.log(`  🔄 QQ 重试 [${source}]: ${id} 仅用歌名`);
-        detail = await getQQUrl(id, (name || '').split(' ')[0]);
+    let detail;
+    switch (source) {
+      case 'kuwo':
+        detail = await getKuwoUrl(id, 'zp');
+        // Kuwo 失败时尝试不同音质
+        if (!detail || !detail.audioUrl) {
+          detail = await getKuwoUrl(id, 'hq');
+        }
+        break;
+      case 'qq': {
+        detail = await getQQUrl(id, keyword || name || '');
+        if (!detail || !detail.audioUrl) {
+          console.log(`  🔄 QQ 重试: ${id}`);
+          detail = await getQQUrl(id, (name || '').split(' ')[0]);
+        }
+        break;
       }
-      break;
-    }
-    case 'netease':
-    default: {
-      detail = await getNeteaseUrl(id);
-      // 同时获取歌词
-      if (detail && detail.audioUrl) {
-        const lrc = await getNeteaseLyric(id);
-        if (lrc) detail.lrc = lrc;
+      case 'netease':
+      default: {
+        detail = await getNeteaseUrl(id);
+        if (detail && detail.audioUrl) {
+          const lrc = await getNeteaseLyric(id);
+          if (lrc) detail.lrc = lrc;
+        }
+        break;
       }
-      break;
     }
-  }
 
-  if (detail && detail.audioUrl) {
-    return res.json({
-      url: detail.audioUrl,
-      name: detail.name,
-      artist: detail.artist,
-      cover: detail.cover,
-      lrc: detail.lrc || null,
-    });
-  }
+    if (detail && detail.audioUrl) {
+      return res.json({
+        url: detail.audioUrl,
+        name: detail.name,
+        artist: detail.artist,
+        cover: detail.cover,
+        lrc: detail.lrc || null,
+      });
+    }
 
-  res.json({ url: null, error: '无法获取播放链接' });
+    res.json({ url: null, error: '无法获取播放链接' });
+  } catch (e) {
+    console.error('[Song URL Error]', e.message);
+    res.json({ url: null, error: '服务异常: ' + e.message });
+  }
 });
 
 // ── Get Multi-Quality Download URLs ──────────────────────────────
