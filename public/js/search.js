@@ -30,7 +30,16 @@ function getSelectedSources() {
 }
 
 // ── Search ──────────────────────────────────────────────────────────
+let searchAbortController = null;
+
 async function doSearch() {
+  // 取消上一次未完成的搜索（防止竞态条件导致旧结果覆盖新结果）
+  if (searchAbortController) {
+    searchAbortController.abort();
+  }
+  searchAbortController = new AbortController();
+  const { signal } = searchAbortController;
+
   // 同时读取桌面端和移动端的输入框
   const kw = ($('searchInput').value || $('searchInputM').value || '').trim();
   if (!kw) return;
@@ -48,7 +57,7 @@ async function doSearch() {
   $('statsCard').innerHTML = `平台: <strong>${sources.map(s => SOURCE_NAMES[s]).join(' + ')}</strong><br>搜索中…`;
 
   try {
-    const r = await fetch(`/api/search?keyword=${encodeURIComponent(kw)}&source=${srcStr}&limit=30`);
+    const r = await fetch(`/api/search?keyword=${encodeURIComponent(kw)}&source=${srcStr}&limit=30`, { signal });
     const d = await r.json();
     $('spinner').style.display = 'none';
 
@@ -88,6 +97,8 @@ async function doSearch() {
       list.appendChild(row);
     });
   } catch (e) {
+    // 被取消的请求直接忽略（新搜索已发起）
+    if (e.name === 'AbortError') return;
     $('spinner').style.display = 'none';
     $('resultLabel').textContent = '错误';
     console.error(e);
