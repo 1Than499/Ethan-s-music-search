@@ -43,8 +43,11 @@ async function doSearch() {
   // 退出收藏歌单视图
   S.showingFavorites = false;
 
-  // 同时读取桌面端和移动端的输入框
-  const kw = ($('searchInput').value || $('searchInputM').value || '').trim();
+  // 优先读取正在使用的输入框（移动端优先，防止隐藏的桌面输入框残留旧值）
+  var isMobile = window.innerWidth <= 768;
+  var kwDesk = $('searchInput').value.trim();
+  var kwMob = $('searchInputM') ? $('searchInputM').value.trim() : '';
+  var kw = isMobile ? (kwMob || kwDesk) : (kwDesk || kwMob);
   if (!kw) return;
   // 双向同步
   $('searchInput').value = kw;
