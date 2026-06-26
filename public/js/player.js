@@ -75,8 +75,10 @@ function applyTrack(d, source, id, name, artists, kw) {
   }
 
   updateFavButton();
-  S.lyrics = d.lrc ? parseLRC(d.lrc) : [];
-  renderLyrics();
+  if (typeof parseLRC === 'function' && typeof renderLyrics === 'function') {
+    S.lyrics = d.lrc ? parseLRC(d.lrc) : [];
+    renderLyrics();
+  }
 
   var a = document.getElementById('audio');
   if (!a) { showToast('音频元素丢失'); return; }
@@ -120,7 +122,7 @@ function onTimeUpdate() {
   var pf = document.getElementById('progressFill');
   if (tc) tc.textContent = fmt(c);
   if (pf) pf.style.width = d ? (c / d * 100) + '%' : '0%';
-  syncLyrics(c);
+  if (typeof syncLyrics === 'function') syncLyrics(c);
 }
 function onMetaLoaded() {
   var a = document.getElementById('audio');
