@@ -376,6 +376,31 @@ html, body { height:100%; overflow:hidden; font-family:var(--font); background:#
 .no-lyrics { display:flex; flex-direction:column; align-items:center; justify-content:center;
   height:100%; color:var(--text3); gap:6px; font-size:12px; }
 
+/* ── Desktop Lyrics Expanded Mode ───────────────────────────── */
+.main.lyrics-expanded .content { display:none; }
+.main.lyrics-expanded .divider-handle { display:none; }
+.main.lyrics-expanded .lyrics-panel {
+  flex:1; width:auto !important; border-left:none;
+  transition:flex 0.35s var(--ease);
+}
+.main.lyrics-expanded .lyrics-body {
+  max-width:720px; margin:0 auto; width:100%;
+  transition:max-width 0.35s var(--ease);
+}
+.main.lyrics-expanded .lyric-line {
+  font-size:16px; padding:6px 28px;
+  transition:font-size 0.3s var(--ease), padding 0.3s var(--ease);
+}
+.main.lyrics-expanded .lyric-line.active {
+  font-size:18px;
+}
+.main.lyrics-expanded .lyrics-header {
+  justify-content:center;
+}
+.main.lyrics-expanded .lyrics-header .label {
+  font-size:12px; text-align:center;
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    Player Bar — Deep Liquid Glass
    ═══════════════════════════════════════════════════════════════════ */
@@ -390,7 +415,13 @@ html, body { height:100%; overflow:hidden; font-family:var(--font); background:#
 }
 
 /* ── Album Art ──────────────────────────────────────────────── */
-.player-art-wrap { position:relative; width:42px; height:42px; flex-shrink:0; border-radius:7px; overflow:hidden; box-shadow:var(--shadow-md); }
+.player-art-wrap {
+  position:relative; width:42px; height:42px; flex-shrink:0; border-radius:7px;
+  overflow:hidden; box-shadow:var(--shadow-md); cursor:pointer;
+  transition:transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.player-art-wrap:hover { transform:scale(1.08); box-shadow:var(--shadow-md), 0 0 16px var(--accent-glow); }
+.player-art-wrap:active { transform:scale(0.96); }
 .player-art { width:42px; height:42px; border-radius:7px; object-fit:cover; background:var(--glass); display:block; }
 .player-art-placeholder {
   width:42px; height:42px; border-radius:7px;

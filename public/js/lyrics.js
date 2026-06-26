@@ -69,9 +69,12 @@ function toggleLyrics() {
   var p = document.getElementById('lyricsPanel');
   var h = document.getElementById('dividerHandle');
   var b = document.getElementById('btnLyric');
+  var main = document.querySelector('.main');
   if (!p) return;
   var isMobile = window.innerWidth <= 768;
+
   if (isMobile) {
+    // 移动端：全屏遮罩
     if (p.classList.contains('mobile-lyrics-open')) {
       p.classList.remove('mobile-lyrics-open');
       if (b) b.classList.remove('active');
@@ -80,14 +83,14 @@ function toggleLyrics() {
       if (b) b.classList.add('active');
     }
   } else {
-    if (p.style.display === 'none') {
-      p.style.display = '';
-      if (h) h.style.display = '';
-      if (b) b.classList.add('active');
-    } else {
-      p.style.display = 'none';
-      if (h) h.style.display = 'none';
+    // 桌面端：展开模式 — 歌词占满搜索区+歌词区
+    if (main && main.classList.contains('lyrics-expanded')) {
+      main.classList.remove('lyrics-expanded');
       if (b) b.classList.remove('active');
+    } else {
+      if (main) main.classList.add('lyrics-expanded');
+      p.style.display = '';
+      if (b) b.classList.add('active');
     }
   }
 }

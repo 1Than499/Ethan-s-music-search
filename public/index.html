@@ -116,7 +116,7 @@
   <!-- ─── Player Bar (macOS style) ─── -->
   <div class="player-bar" id="playerBar">
     <!-- Album Art -->
-    <div class="player-art-wrap" id="pArtWrap">
+    <div class="player-art-wrap" id="pArtWrap" onclick="toggleLyrics()" title="点击查看歌词">
       <img class="player-art" id="pArt" src="" style="display:none" onload="this.style.display='';$('pArtPH').style.display='none'" onerror="this.style.display='none';$('pArtPH').style.display=''">
       <div class="player-art-placeholder" id="pArtPH">🎵</div>
     </div>
