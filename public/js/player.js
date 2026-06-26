@@ -75,6 +75,7 @@ function applyTrack(d, source, id, name, artists, kw) {
   }
 
   updateFavButton();
+  // 先显示已有歌词，没有就空着
   if (typeof parseLRC === 'function' && typeof renderLyrics === 'function') {
     S.lyrics = d.lrc ? parseLRC(d.lrc) : [];
     renderLyrics();
@@ -90,6 +91,26 @@ function applyTrack(d, source, id, name, artists, kw) {
   }).catch(function(e) {
     console.warn('play rejected:', e.name);
   });
+
+  // 异步补拉歌词（不阻塞播放）
+  if (!d.lrc) fetchLyricsAsync(source, id, kw);
+}
+
+// ── 异步获取歌词（播放后补拉）────────────────────────────────────────
+function fetchLyricsAsync(source, id, keyword) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/api/lyric/' + source + '/' + id + '?keyword=' + encodeURIComponent(keyword || ''));
+  xhr.timeout = 8000;
+  xhr.onload = function() {
+    try {
+      var data = JSON.parse(xhr.responseText);
+      if (data && data.lrc && typeof parseLRC === 'function' && typeof renderLyrics === 'function') {
+        S.lyrics = parseLRC(data.lrc);
+        renderLyrics();
+      }
+    } catch (_) {}
+  };
+  xhr.send();
 }
 
 // ── Controls ────────────────────────────────────────────────────────
