@@ -787,6 +787,7 @@ html, body { height:100%; overflow:hidden; font-family:var(--font); background:#
     width:100% !important; border-radius:0 !important; border-left:none !important;
     display:none; padding-top:env(safe-area-inset-top,0px);
     padding-bottom:env(safe-area-inset-bottom,0px);
+    background:var(--bg) !important;
   }
   .lyrics-panel.mobile-lyrics-open { display:flex !important; }
   .lyrics-header { padding:16px; min-height:56px; }
