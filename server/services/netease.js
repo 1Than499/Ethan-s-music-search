@@ -34,28 +34,56 @@ async function searchNetease(keyword, page = 1, limit = 30) {
 }
 
 /**
- * 获取网易云音乐播放链接
+ * 获取网易云音乐播放链接（优先用直链，不用meting跳转）
  */
 async function getNeteaseUrl(songId) {
+  // 优先: NeteaseCloudMusicApi 拿直链（快且稳定）
+  try {
+    const { song_url } = require('NeteaseCloudMusicApi');
+    const r = await song_url({ id: String(songId), br: 320000 });
+    if (r.body?.code === 200 && r.body.data?.[0]?.url) {
+      const su = r.body.data[0];
+      // 同时获取封面和歌词
+      let cover = null, name = '', artist = '';
+      try {
+        const meting = await axios.get(NETEASE_METING, {
+          params: { type: 'song', id: songId },
+          headers: HEADERS, timeout: 5000,
+        });
+        if (Array.isArray(meting.data) && meting.data.length) {
+          cover = meting.data[0].pic || null;
+          name = meting.data[0].name || '';
+          artist = meting.data[0].artist || '';
+        }
+      } catch (_) {}
+      console.log(`  ✅ Netease直链: ${su.url.slice(0,60)}...`);
+      return { name, artist, audioUrl: su.url, cover, lrc: null };
+    }
+  } catch (e) {
+    console.log(`  ⚠ Netease直链失败: ${e.message}, 降级meting`);
+  }
+
+  // 降级: meting 跳转 URL
   try {
     const resp = await axios.get(NETEASE_METING, {
       params: { type: 'song', id: songId },
       headers: HEADERS, timeout: TIMEOUT,
     });
     const data = resp.data;
-    if (!Array.isArray(data) || !data.length) return null;
-    const d = data[0];
-
-    return {
-      name: d.name || '',
-      artist: d.artist || '',
-      audioUrl: d.url || null,
-      cover: d.pic || null,
-    };
+    if (Array.isArray(data) && data.length) {
+      const d = data[0];
+      return {
+        name: d.name || '',
+        artist: d.artist || '',
+        audioUrl: d.url || null,
+        cover: d.pic || null,
+      };
+    }
   } catch (e) {
     console.error('[Netease URL]', e.message);
-    return null;
   }
+
+  return null;
 }
 
 /**
